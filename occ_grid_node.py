@@ -8,7 +8,7 @@ import numpy as np
 import map_conversions as mc
 import create_occ_grid as cog
 
-def env_to_occ_grid():
+def occ_grid_node():
     ##### YOUR CODE STARTS HERE #####
    # Initialize the ROS node
     rospy.init_node('occ_grid_node')
@@ -19,36 +19,40 @@ def env_to_occ_grid():
     blocks = rospy.get_param('~blocks')      # Format: [[xmin, ymin, xmax, ymax], ...]
     resolution = rospy.get_param('~resolution')  # Cell size
     
+
+    
     # Create an empty OccupancyGrid message
-    occ_grid_msg = OccupancyGrid()
+    grid = OccupancyGrid()
 
     # Fill in the header of the message
-    occ_grid_msg.header.stamp = rospy.Time.now()
-    occ_grid_msg.header.frame_id = 'map'
+    grid.header.stamp = rospy.Time.now()
+    grid.header.frame_id = 'map'
 
     # Fill in the metadata of the message
-    occ_grid_msg.info.width = int((boundary[2] - boundary[0]) / resolution)  # Number of columns
-    occ_grid_msg.info.height = int((boundary[3] - boundary[1]) / resolution)  # Number of rows
-    occ_grid_msg.info.resolution = resolution
-    occ_grid_msg.info.origin.position.x = boundary[0]
-    occ_grid_msg.info.origin.position.y = boundary[1]
-    occ_grid_msg.info.origin.position.z = 0.0
-    occ_grid_msg.info.origin.orientation.x = 0.0
-    occ_grid_msg.info.origin.orientation.y = 0.0
-    occ_grid_msg.info.origin.orientation.z = 0.0
-    occ_grid_msg.info.origin.orientation.w = 1.0
+    grid.info.width = int((boundary[2] - boundary[0]) / resolution)  # Number of columns
+    grid.info.height = int((boundary[3] - boundary[1]) / resolution)  # Number of rows
+    grid.info.resolution = resolution
 
-    # Create the occupancy grid using the provided boundary, blocks, and resolution
-    occupancy_grid = cog.create_occupancy_grid(boundary, blocks, resolution)
+    grid.info.origin.position.x = boundary[0]
+    grid.info.origin.position.y = boundary[1]
+    grid.info.origin.position.z = 0.0
+
+    grid.info.origin.orientation.x = 0.0
+    grid.info.origin.orientation.y = 0.0
+    grid.info.origin.orientation.z = 0.0
+    grid.info.origin.orientation.w = 1.0
 
     # Fill in the data field of the message
-    occ_grid_msg.data = occupancy_grid.ravel().tolist()
+    occupancy_grid = cog.create_occupancy_grid(boundary, blocks, resolution)
+
+    grid.data = occupancy_grid.ravel().tolist()
 
     # Create a publisher to publish the occupancy grid message
     pub = rospy.Publisher('map', OccupancyGrid, latch=True)
+    
 
     # Publish the message
-    pub.publish(occ_grid_msg)
+    pub.publish(grid)
 
     rospy.loginfo("Occupancy grid published")
 
@@ -59,7 +63,16 @@ def env_to_occ_grid():
 
 if __name__ == '__main__':
     try:
-        env_to_occ_grid()
+        occ_grid_node()
     except rospy.ROSInterruptException:
         pass
 
+
+## og = OccupancyGrid()
+## og.header.frame_id = rospy.get_param('frame_id')
+# og.header.stano = rospy.Time.now()
+# boundary = rospy.get_param('boundary')
+# x0, y0, x1, y1 = boundary
+# og.info.resolution = rospy.get_param('resolution')
+# og.info.width = 
+# og.info.height = 
